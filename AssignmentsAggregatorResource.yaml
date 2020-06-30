@@ -1,0 +1,1250 @@
+---
+swagger: "2.0"
+info:
+  description: "All endpoints for Assignments Aggregator"
+  version: "1.0"
+  title: "Assignments Aggregator"
+  contact:
+    name: "Compass Dev"
+    url: "https://wiki.ucern.com/display/AcuteCareDev/Compass+Dev+-+Home"
+paths:
+  /provider-reference-data:
+    get:
+      tags:
+        - "reference-data"
+      summary: "Retrieves a list of reference data."
+      description: "Get Care Team reference data for care team assignments (phone types, roles, relationships, Organization Id)"
+      operationId: "retrieveReferenceData"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Correlation-ID"
+          in: "header"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "The list of reference data was retrieved successfully."
+          schema:
+            $ref: "#/definitions/ReferenceDataResponse"
+        401:
+          description: "Either the OAuth token is not provided or invalid token is provided."
+        403:
+          description: "The requested resource is not accessible due to insufficient privileges."
+        500:
+          description: "Error occurred on server while processing user request."
+
+  /assignments/{uniqueIdentifier}:
+    delete:
+      summary: "Deletes assignment by uniqueIdentifier"
+      description: "An assignment is uniquely identified using the provided uniqueIdentifier\
+        \ and is deleted. This service contacts an external service to delete assignments.\
+        \ If this service could not establish connection with external service or\
+        \ could not get any response from external service or if external service\
+        \ is down, this service returns an error code of 500 indicating failure to\
+        \ serve user request."
+      operationId: "deleteAssignment"
+      parameters:
+        - name: "Cerner-Correlation-Id"
+          in: "header"
+          description: "Id to identify a request for logging purposes"
+          required: false
+          type: "string"
+        - name: "uniqueIdentifier"
+          in: "path"
+          description: "Id to uniquely identify an assignment"
+          required: true
+          type: "string"
+      responses:
+        204:
+          description: "Assignment deleted successfully."
+        400:
+          description: "Bad Request. The provided unique identifier is invalid."
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        403:
+          description: "The requested resource is not accessible due to insufficient\
+            \ privileges."
+        404:
+          description: "The request cannot be processed as the entity is not found."
+        500:
+          description: "Error occurred on server while processing user request."
+
+  /v2/encounters/{encounterId}/care-teams:
+    get:
+      summary: "Retrieves the cross-visit/lifetime and visit-specific care team members\
+        \ of a patient by encounter id."
+      description: "Retrieves the care team members based on the passed in criteria."
+      operationId: "retrieveCareTeamByEncounter"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Identifier-Mapping-Scope"
+          in: "header"
+          required: false
+          type: "string"
+        - name: "encounterId"
+          in: "path"
+          description: "encounter Id"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CareTeamByPatientResponse"
+        400:
+          description: "Bad Request. Invalid encounter id was provided."
+        401:
+          description: "Either the OAuth token is not provided or invalid token is provided."
+        404:
+          description: "Not Found. The encounter doesn't exist."
+        500:
+          description: "Internal Server Error. All other unexpected errors."
+  /encounters/{encounterId}/care-teams:
+    get:
+      description: Retrieves the current visit and cross-visit Care Team information for a patient. This API will retrieve the current visit and the cross-visit/lifetime Care Team information.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      deprecated : true
+      tags:
+        - Get Care Team by Encounter
+      parameters:
+        - in: path
+          name: encounterId
+          description: Unique identifier of the patient's encounter whose current Care Team information is associated to.
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/CareTeamByPatientResponse'
+        '400':
+          description: Bad Request. (Invalid encounter id was provided)
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found. (The encounter doesn't exist)
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '500':
+          description: Internal Server Error. (All other unexpected errors)
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /facilities/{facilityId}/medical-services/{medicalServiceId}/medical-teams/{medicalTeamId}/team-members:
+    get:
+      summary: "Retrieves medical team members by facility identifier, medical service\
+        \ identifier and medical team identifier."
+      description: "Get medical team members. "
+      operationId: "retrieveMedicalTeamMemberBuild"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Correlation-ID"
+          in: "header"
+          required: false
+          type: "string"
+        - name: "facilityId"
+          in: "path"
+          description: "The unique identifier of the facility."
+          required: true
+          type: "string"
+        - name: "medicalServiceId"
+          in: "path"
+          description: "The unique identifier of the medical service."
+          required: true
+          type: "string"
+        - name: "medicalTeamId"
+          in: "path"
+          description: "The unique identifier of the medical team."
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "The medical team members are retrieved successfully."
+          schema:
+            $ref: "#/definitions/MedicalTeamMemberBuildResponse"
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        404:
+          description: "Invalid input parameter."
+        403:
+          description: "The requested resource is not accessible due to insufficient\
+            \ privileges."
+        500:
+          description: "Error occurred on server while processing user request."
+  /facilities/{facilityId}/medical-services/{medicalServiceId}/medical-teams:
+    get:
+      summary: "Retrieves medical teams by facility identifier and medical service\
+        \ identifier."
+      description: "Get medical teams."
+      operationId: "retrieveMedicalTeamBuild"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Correlation-ID"
+          in: "header"
+          required: false
+          type: "string"
+        - name: "facilityId"
+          in: "path"
+          description: "The unique identifier of the facility."
+          required: true
+          type: "string"
+        - name: "medicalServiceId"
+          in: "path"
+          description: "The unique identifier of the medical service."
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "The medical teams are retrieved successfully."
+          schema:
+            $ref: "#/definitions/MedicalTeamBuildResponse"
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        404:
+          description: "Invalid input parameter."
+        403:
+          description: "The requested resource is not accessible due to insufficient\
+            \ privileges."
+        500:
+          description: "Error occurred on server while processing user request."
+  /facilities:
+    get:
+      summary: "Retrieves all available facilities."
+      description: "Get facilities."
+      operationId: "retrieveFacilityBuild"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Correlation-ID"
+          in: "header"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "The facilities are retrieved successfully."
+          schema:
+            $ref: "#/definitions/FacilityBuildResponse"
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        403:
+          description: "The requested resource is not accessible due to insufficient\
+            \ privileges."
+        500:
+          description: "Error occurred on server while processing user request."
+  /facilities/{facilityId}/medical-services:
+    get:
+      summary: "Retrieves medical services by facility identifier."
+      description: "Get medical services."
+      operationId: "retrieveMedicalServiceBuild"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Correlation-ID"
+          in: "header"
+          required: false
+          type: "string"
+        - name: "facilityId"
+          in: "path"
+          description: "The unique identifier of the facility."
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "The medical services are retrieved successfully."
+          schema:
+            $ref: "#/definitions/MedicalServiceBuildResponse"
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        404:
+          description: "Invalid input parameter."
+        403:
+          description: "The requested resource is not accessible due to insufficient\
+            \ privileges."
+        500:
+          description: "Error occurred on server while processing user request."
+
+  /assignments:
+    put:
+      summary: "Updates all given assignments"
+      description: "Updates all given Assignments. An assignment is an association\
+        \ between two entities. Say, PROVIDER and ENCOUNTER are two entities, then\
+        \ an assignment from PROVIDER to ENCOUNTER consists of the following details\
+        \ - Assignment type is PROVIDER_ENCOUNTER, fromEntity is PROVIDER, toEntity\
+        \ is ENCOUNTER. Valid assignments are PROVIDER to PATIENT, PROVIDER to ENCOUNTER,\
+        \ CODE_TEAM to PATIENT, CODE_TEAM to ENCOUNTER, HOSPITAL_SERVICE to PATIENT,\
+        \ HOSPITAL_SERVICE to ENCOUNTER. This service contacts an external service\
+        \ to save assignments. If this service could not establish connection with\
+        \ external service or could not get any response from external service or\
+        \ if external service is down, this service returns an error code of 500 indicating\
+        \ failure to serve user request."
+      operationId: "updateAssignment"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Correlation-Id"
+          in: "header"
+          required: false
+          type: "string"
+        - in: "body"
+          name: "body"
+          description: "Update all given Assignments."
+          required: true
+          schema:
+            $ref: "#/definitions/AssignmentRequest"
+      responses:
+        200:
+          description: "Assignments updated successfully"
+        400:
+          description: "User input is invalid. Please check the CareTeamAssignment\
+            \ object for more details"
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        403:
+          description: "The requested resource is not accessible due to insufficient\
+            \ privileges."
+        422:
+          description: "The request cannot be processed as the entity is not found."
+        500:
+          description: "Error occurred on server while processing user request."
+
+    post:
+      summary: "Inserts all given assignments"
+      description: "Insert all given Assignments. An assignment is an association\
+        \ between two entities. Say, PROVIDER and ENCOUNTER are two entities, then\
+        \ an assignment from PROVIDER to ENCOUNTER consists of the following details\
+        \ - Assignment type is PROVIDER_ENCOUNTER, fromEntity is PROVIDER, toEntity\
+        \ is ENCOUNTER. Valid assignments are PROVIDER to PATIENT, PROVIDER to ENCOUNTER,\
+        \ CODE_TEAM to PATIENT, CODE_TEAM to ENCOUNTER, HOSPITAL_SERVICE to PATIENT,\
+        \ HOSPITAL_SERVICE to ENCOUNTER. The service doesn't support partial operations,\
+        \ either the entire input list is processed succesfully or none are processed\
+        \ when an error occurs. This service contacts an external service to save\
+        \ assignments. If this service could not establish connection with external\
+        \ service or could not get any response from external service or if external\
+        \ service is down, this service returns an error code of 500 indicating failure\
+        \ to serve user request."
+      operationId: "insertAssignment"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Correlation-Id"
+          in: "header"
+          required: false
+          type: "string"
+        - in: "body"
+          name: "body"
+          description: "Insert all given Assignments."
+          required: true
+          schema:
+            $ref: "#/definitions/AssignmentRequest"
+      responses:
+        201:
+          description: "Assignments created successfully"
+        400:
+          description: "User input is invalid. Please check the CareTeamAssignment\
+            \ object for more details"
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        403:
+          description: "The requested resource is not accessible due to insufficient\
+            \ privileges."
+        422:
+          description: "The request cannot be processed as the entity is not found."
+        500:
+          description: "Error occurred on server while processing user request."
+
+  /v2/patients/{patientId}/care-teams:
+    get:
+      summary: "Retrieves the cross-visit/lifetime care team members of a patient\
+        \ by patient id."
+      description: "Retrieves the care team members based on the passed in criteria."
+      operationId: "retrieveCareTeamByPatient"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "Cerner-Identifier-Mapping-Scope"
+          in: "header"
+          required: false
+          type: "string"
+        - name: "patientId"
+          in: "path"
+          description: "Unique identifier of the person."
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Success."
+          schema:
+            $ref: "#/definitions/CareTeamByPatientResponse"
+        400:
+          description: "Bad Request. Invalid person id was provided."
+        401:
+          description: "Either the OAuth token is not provided or invalid token is provided."
+        404:
+          description: "Not Found. The patient doesn't exist."
+        500:
+          description: "Internal Server Error. All other unexpected errors."
+  /patients/{patientId}/care-teams:
+    get:
+      description: Retrieves the cross-visit/lifetime Care Team members for a given patient. Care Team members associated to a patient's encounter will not be included in the returned list. This API will only retrieve the cross-visit/lifetime Care Team information.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      deprecated : true
+      tags:
+        - Get Care Team by Patient
+      parameters:
+        - in: path
+          name: patientId
+          description: Unique identifier of the patient.
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/CareTeamByPatientResponse'
+        '400':
+          description: Bad Request. (Invalid patient id was provided)
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found. (The patient doesn't exist)
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '500':
+          description: Internal Server Error. (All other unexpected errors)
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /encounters/{encounterId}/suggested-assignments:
+    get:
+      summary: "Retrieves the suggested care team members that could be possibly converted\
+        \ into care team assignments for the encounter using encounter id"
+      description: "Retrieves the suggested care team members that could be possibly\
+        \ converted into care team assignments for the encounter using encounter id"
+      produces:
+        - application/json
+      operationId: "retrieveSuggestedAssignments"
+      parameters:
+        - name: "Cerner-Correlation-Id"
+          in: "header"
+          description: "Id to identify a request for logging purposes"
+          required: false
+          type: "string"
+        - name: "encounterId"
+          in: "path"
+          description: "encounter Id"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SuggestedCareTeamAssignmentResponse"
+        400:
+          description: "Bad Request. Invalid encounter id was provided."
+        401:
+          description: "Either the OAuth token is not provided or invalid token is\
+            \ provided."
+        404:
+          description: "Not Found. The encounter doesn't exist."
+        500:
+          description: "Internal Server Error. All other unexpected errors."
+definitions:
+  MedicalTeamMemberBuildResponse:
+    type: "object"
+    required:
+      - "careTeamMembers"
+    properties:
+      careTeamMembers:
+        type: "array"
+        description: "Collection of medical team members"
+        items:
+          $ref: "#/definitions/MedicalTeamMember"
+  MedicalTeamMember:
+    type: "object"
+    required:
+      - "lastUpdateDateTime"
+      - "name"
+      - "personId"
+    properties:
+      personId:
+        type: "integer"
+        format: "int64"
+        description: "The unique identifier for the medical team member."
+      name:
+        type: "string"
+        description: "The full formatted name for the medical team member. Will be\
+          \ in the format the name was stored."
+      phoneNumbers:
+        type: "object"
+        description: "The list of phone numbers with associated phone type for the\
+          \ medical team member."
+        additionalProperties:
+          type: "array"
+          items:
+            type: "string"
+      lastUpdateDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "The latest update date and time for the medical team member\
+          \ in ISO8601 format. Time must be provided and we will honor date precision\
+          \ down to the second."
+      emails:
+        type: "array"
+        description: "Set of emails for medical team member."
+        uniqueItems: true
+        items:
+          type: "string"
+  MedicalTeamBuildResponse:
+    type: "object"
+    required:
+      - "medicalTeams"
+    properties:
+      medicalTeams:
+        type: "array"
+        description: "List of all medical teams."
+        items:
+          $ref: "#/definitions/Code"
+  Code:
+    type: "object"
+    required:
+      - "display"
+      - "id"
+    properties:
+      id:
+        type: "string"
+        description: "The unique, positive, non-blank primary identifier of the Code."
+      display:
+        type: "string"
+        description: "The non-blank display of the Code."
+  FacilityBuildResponse:
+    type: "object"
+    required:
+      - "facilities"
+    properties:
+      facilities:
+        type: "array"
+        description: "List of all facilities."
+        items:
+          $ref: "#/definitions/Code"
+  MedicalServiceBuildResponse:
+    type: "object"
+    required:
+      - "medicalServices"
+    properties:
+      medicalServices:
+        type: "array"
+        description: "List of all medical services."
+        items:
+          $ref: "#/definitions/Code"
+  CareTeamByPatientResponse:
+    type: "object"
+    required:
+      - "patient"
+    properties:
+      patient:
+        $ref: "#/definitions/CareTeamPerson"
+      encounter:
+        $ref: "#/definitions/CareTeamEncounter"
+      careTeamMembers:
+        type: "array"
+        description: "The patient's list of Care Teams and team members. Optional."
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/CareTeamMember"
+      status:
+        type: "array"
+        description: "The return status block, if errors occurred. Optional."
+        items:
+          $ref: "#/definitions/ErrorResponse"
+
+  ReferenceDataResponse:
+    type: "object"
+    required:
+      - "careTeamReferenceDataList"
+    properties:
+      careTeamReferenceDataList:
+        type: "array"
+        description: "List of all reference data."
+        items:
+          $ref: "#/definitions/CareTeamReferenceData"
+  CareTeamReferenceData:
+    type: "object"
+    required:
+      - "codeValueInfo"
+      - "referenceType"
+    properties:
+      referenceType:
+        type: "string"
+        example: "PHONE_TYPE"
+        description: "Type of Reference Data."
+        enum:
+          - "PHONE_TYPE"
+          - "ROLES_CARE_TEAM"
+          - "ROLES_PERSONAL"
+          - "ROLES_THIS_VISIT"
+          - "ROLES_ONGOING"
+          - "RELATIONSHIP_PERSONAL"
+          - "FACILITY_ORGANIZATION_ID"
+      codeValueInfo:
+        type: "array"
+        description: "List of all code values associated with a reference type."
+        items:
+          $ref: "#/definitions/Code"
+  CareTeam:
+    type: "object"
+    required:
+      - "careTeamId"
+      - "medServiceCode"
+    properties:
+      careTeamId:
+        type: "integer"
+        format: "int64"
+        description: "The unique identifier for the Care Team. Required."
+      facilityCode:
+        $ref: "#/definitions/MillenniumCode"
+      medServiceCode:
+        $ref: "#/definitions/MillenniumCode"
+      physTeamCode:
+        $ref: "#/definitions/MillenniumCode"
+      lastUpdateDateTime:
+        type: "string"
+        description: "The last update time of the team. Optional."
+  CareTeamAddress:
+    type: "object"
+    required:
+      - "addressId"
+      - "beginEffectiveDateTime"
+      - "endEffectiveDateTime"
+    properties:
+      addressId:
+        type: "string"
+        description: "The unique identifier of the address."
+      beginEffectiveDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "The begin effective date time of the address in ISO8601 format.\
+            \ We will honor date precision down to the second."
+      endEffectiveDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "The end effective date time of the address in ISO8601 format.\
+            \ We will honor date precision down to the second."
+      streetAddressLines:
+        type: "array"
+        description: "The collection of street address lines."
+        items:
+          type: "string"
+      city:
+        type: "string"
+        description: "The city associated with the street address."
+      state:
+        type: "string"
+        description: "The state associated with the street address."
+      type:
+        type: "string"
+        example: "HOME"
+        description: "The meaning of the address type."
+      country:
+        type: "string"
+        example: "Italy"
+        description: "The full name of the country associated with the street address"
+      postalCode:
+        type: "string"
+        description: "The postal code associated with the street address."
+  CareTeamEncounter:
+    type: "object"
+    required:
+      - "encounterId"
+      - "encounterStatusCode"
+    properties:
+      encounterId:
+        type: "integer"
+        format: "int64"
+        description: "The unique identifier for the patient's encounter. Required."
+      patientId:
+        type: "integer"
+        format: "int64"
+        description: "The unique identifier for the encounter's patient. Optional."
+      encounterStatusCode:
+        $ref: "#/definitions/CodifiedValue"
+      arriveDateTime:
+        type: "string"
+        description: "The arrival date and time of the patient's encounter. Will be\
+          \ ISO date format String. Optional."
+      registrationDateTime:
+        type: "string"
+        description: "The registration date and time of the patient's encounter. Will\
+          \ be ISO date format String. Optional."
+      estArriveDateTime:
+        type: "string"
+        description: "The estimated arrival date and time of the patient's encounter.\
+          \ Will be ISO date format String. Optional."
+      preRegDateTime:
+        type: "string"
+        description: "The pre-registration date and time of the patient's encounter.\
+          \ Will be ISO date format String. Optional."
+      dischargeDateTime:
+        type: "string"
+        description: "The discharge date and time of the patient's encounter. Will\
+          \ be ISO date format String. Optional."
+      estDepartDateTime:
+        type: "string"
+        description: "The estimated depart date and time of the patient's encounter.\
+          \ Will be ISO date format String. Optional."
+  CareTeamMember:
+    type: "object"
+    required:
+      - "isPrimaryContact"
+      - "lastUpdateDateTime"
+      - "memberRoleCode"
+      - "memberType"
+    properties:
+      memberType:
+        type: "string"
+        description: "The Care Team member type, i.e. Encounter Based, Person Based,\
+          \ Non Providers. Required."
+        enum:
+          - "CARE_TEAM"
+          - "SHIFT_ASSIGNMENT"
+          - "CROSS_VISIT_PROVIDER"
+          - "LIFETIME_PROVIDER"
+          - "LIFETIME_NONPROVIDER"
+      teamMember:
+        $ref: "#/definitions/CareTeamPerson"
+      careTeamUnit:
+        $ref: "#/definitions/CareTeam"
+      memberRoleCode:
+        $ref: "#/definitions/CodifiedValue"
+      lastUpdateDateTime:
+        type: "string"
+        description: "The latest update date and time of the Care Team. Will be ISO\
+          \ date format String. Required."
+      isPrimaryContact:
+        type: "boolean"
+        description: "Indicates if this Care Team member is the primary contact for\
+          \ the Care Team. True, if the member is the primary contact. Required."
+      memberRoleTypeCode:
+        $ref: "#/definitions/CodifiedValue"
+      positionCd:
+        $ref: "#/definitions/CodifiedValue"
+      prsnlTypeCd:
+        $ref: "#/definitions/CodifiedValue"
+      emails:
+        type: "array"
+        description: "The Care Team member email. Optional."
+        uniqueItems: true
+        items:
+          type: "string"
+      medServiceCd:
+        $ref: "#/definitions/CodifiedValue"
+      uniqueIdentifier:
+        type: "string"
+        description: "Unique Identifier of a Care Team Member Assignment."
+      assignmentToEntityType:
+        type: "string"
+        description: "The Entity Type to which the Care Team Member is assigned."
+        enum:
+          - "PATIENT"
+          - "ENCOUNTER"
+  CareTeamPerson:
+    type: "object"
+    required:
+      - "name"
+      - "personId"
+      - "version"
+    properties:
+      personId:
+        type: "integer"
+        format: "int64"
+        description: "The unique identifier for the person. Required."
+      version:
+        type: "integer"
+        format: "int32"
+        description: "The version of the person. It is used to modify person details."
+      name:
+        type: "string"
+        description: "The full formatted name of the person. Required."
+      phoneNumbers:
+        type: "array"
+        description: "The list of phone numbers for the Care Team person. Optional."
+        items:
+          $ref: "#/definitions/CareTeamPhoneNumber"
+      careTeamAddresses:
+        type: "array"
+        description: "The collection of care team addresses of the person."
+        items:
+          $ref: "#/definitions/CareTeamAddress"
+  CareTeamPhoneNumber:
+    type: "object"
+    required:
+      - "beginEffectiveDateTime"
+      - "endEffectiveDateTime"
+      - "phoneId"
+      - "phoneNumber"
+    properties:
+      phoneId:
+        type: "string"
+        description: "The unique identifier of the phone number."
+      phoneNumber:
+        type: "string"
+        description: "The phone number of a Care Team person. Required."
+      phoneTypeCode:
+        $ref: "#/definitions/CodifiedValue"
+      contactMethodCode:
+        $ref: "#/definitions/CodifiedValue"
+      phoneExtension:
+        type: "string"
+        example: "123"
+        description: "The phone extension of a Care Team person."
+      beginEffectiveDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "The begin effective date time of the phone number in ISO8601\
+          \ format. We will honor date precision down to the second."
+      endEffectiveDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "The end effective date time of the phone number in ISO8601 format.\
+          \ We will honor date precision down to the second."
+  CodifiedValue:
+    type: "object"
+    required:
+      - "millenniumCode"
+    properties:
+      millenniumCode:
+        $ref: "#/definitions/MillenniumCode"
+      standardCodes:
+        type: "array"
+        description: "The list of possible translatable standard codes."
+        items:
+          $ref: "#/definitions/StandardCode"
+  ErrorResponse:
+    type: "object"
+    required:
+      - "field"
+      - "message"
+      - "severity"
+      - "type"
+      - "value"
+    properties:
+      severity:
+        type: "string"
+        description: "The error severity."
+        enum:
+          - "INFO"
+          - "WARNING"
+          - "ERROR"
+      type:
+        type: "string"
+        description: "The error type."
+        enum:
+          - "MAPPING_NOT_FOUND"
+          - "MAPPING_SERVICE_UNAVAILABLE"
+          - "MAPPING_SCOPE_NOT_FOUND"
+          - "MAPPING_SERVICE_FAILURE"
+          - "VALIDATION"
+      field:
+        type: "string"
+        description: "The error field."
+      value:
+        type: "string"
+        description: "The error value."
+      message:
+        type: "string"
+        description: "The error message that will contain useful information for troubleshooting."
+  MillenniumCode:
+    type: "object"
+    required:
+      - "codeSet"
+      - "codeValue"
+      - "display"
+      - "meaning"
+    properties:
+      codeValue:
+        type: "integer"
+        format: "int64"
+        description: "The milliennium code value. Required."
+      codeSet:
+        type: "integer"
+        format: "int64"
+        description: "The milliennium code set. Required."
+      display:
+        type: "string"
+        description: "The milliennium code display. Required."
+      meaning:
+        type: "string"
+        description: "The milliennium code cdf meaning. Required."
+  StandardCode:
+    type: "object"
+    required:
+      - "identifier"
+      - "mapping"
+      - "namespace"
+    properties:
+      valueSet:
+        type: "string"
+        description: "The value set of this identifier. Optional."
+      namespace:
+        type: "string"
+        description: "The namespace of this identifier. Required."
+      identifier:
+        type: "string"
+        description: "The identifier value. Required."
+      version:
+        type: "string"
+        description: "The version of this identifier. Optional."
+      display:
+        type: "string"
+        description: "The display of this identifier. Optional."
+      mapping:
+        type: "boolean"
+        description: "Indicates if the identifier is equivalent to the local identifier\
+          \ provided or is the result of a mapping. Returns True if this identifier\
+          \ is the result of a mapping, false otherwise. Example - Given a nomenclature\
+          \ identifier with the source of SNOMED an outbound identifier representing\
+          \ same SNOMED would NOT be a mapping, while a cross mapped IDC-10 code would.\
+          \ Required."
+
+  AssignmentRequest:
+    type: "object"
+    required:
+      - "careTeamAssignments"
+    properties:
+      careTeamAssignments:
+        type: "array"
+        description: "List of all assignments"
+        items:
+          $ref: "#/definitions/CareTeamAssignment"
+  CareTeamAssignment:
+    type: "object"
+    properties:
+      assignmentId:
+        type: "string"
+        example: "971d791a-9441-4ffe-b5ab-ae712c8bc2d8"
+        description: "Assignment identifier. This is to be provided only when you\
+            \ intend to update/delete the assignment, if not provided the given assignment\
+            \ will be created in the database."
+      assignment:
+        $ref: "#/definitions/CloudAssignment"
+  CloudAssignment:
+    type: "object"
+    required:
+      - "careTeamMemberType"
+      - "endDateTime"
+      - "fromEntity"
+      - "startDateTime"
+      - "toEntity"
+    properties:
+      startDateTime:
+        type: "string"
+        example: "2017-12-01T23:00:00Z"
+        description: "Start Date and Time of this Assignment in ISO8601 format. This\
+            \ could be a past date. We will honor date precision down to the second."
+      endDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "End Date and Time of this Assignment in ISO8601 format. This\
+            \ could be a past date, but must be greater than start date. We will honor\
+            \ date precision down to the second."
+      fromEntity:
+        $ref: "#/definitions/FromEntity"
+      toEntity:
+        $ref: "#/definitions/ToEntity"
+      careTeamMemberType:
+        type: "string"
+        example: "SHIFT_ASSIGNMENT"
+        description: "The Care Team member type, which could be Encounter Based, Person\
+            \ Based, or Non Providers"
+        enum:
+          - "CARE_TEAM"
+          - "SHIFT_ASSIGNMENT"
+          - "CROSS_VISIT_PROVIDER"
+          - "LIFETIME_PROVIDER"
+          - "LIFETIME_NONPROVIDER"
+  FromEntity:
+    type: "object"
+    required:
+      - "id"
+      - "type"
+    properties:
+      id:
+        type: "string"
+        example: "1476589"
+        description: "Unique identifier for this entity"
+      type:
+        type: "string"
+        example: "PROVIDER"
+        description: "Type of entity. If the entity type is PROVIDER, then the role\
+            \ can be provided, but medicalService and facility shouldn't be provided,\
+            \ these will be ignore if provided. If entity is CODE_TEAM, then medicalService\
+            \ and facility are mandatory, role is optional. If entity is HOSPITAL_SERVICE,\
+            \ then facility is mandatory, role is optional. A BAD_REQUEST will be thrown\
+            \ if the above rules are not met."
+        enum:
+          - "PROVIDER"
+          - "CODE_TEAM"
+          - "HOSPITAL_SERVICE"
+      roleId:
+        type: "string"
+        example: "12345"
+        description: "Identifier for the Role"
+      facilityId:
+        type: "string"
+        example: "567890"
+        description: "Identifier for the Facility"
+      medicalServiceId:
+        type: "string"
+        example: "5720265"
+        description: "Identifier for the Medical Service"
+      medicalTeamId:
+        type: "string"
+        example: "123456"
+        description: "Identifier for the Medical Team"
+      relationshipId:
+        type: "string"
+        example: "7089456"
+        description: "Identifier for the Relationship. The relationshipId is required\
+            \ when careTeamMemberType is LIFETIME_NONPROVIDER in all other cases its\
+            \ ignored."
+  ToEntity:
+    type: "object"
+    required:
+      - "id"
+      - "type"
+    properties:
+      id:
+        type: "string"
+        example: "7687822"
+        description: "Unique identifier for this entity"
+      type:
+        type: "string"
+        example: "ENCOUNTER"
+        description: "Type of entity"
+        enum:
+          - "PATIENT"
+          - "ENCOUNTER"
+  CareTeamEncounterV2:
+    type: "object"
+    required:
+      - "encounterId"
+      - "encounterStatusId"
+    properties:
+      arriveDateTime:
+        type: "string"
+        description: "The arrival date and time of the patient's encounter. Will be\
+          \ ISO date format String. Optional."
+      dischargeDateTime:
+        type: "string"
+        description: "The discharge date and time of the patient's encounter. Will\
+          \ be ISO date format String. Optional."
+      encounterId:
+        type: "string"
+        description: "The unique identifier for the patient's encounter. Required."
+      encounterStatus:
+        description: "The status of the patient's encounter. Required."
+        $ref: "#/definitions/CodifiedValue"
+      estArriveDateTime:
+        type: "string"
+        description: "The estimated arrival date and time of the patient's encounter.\
+          \ Will be ISO date format String. Optional."
+      estDepartDateTime:
+        type: "string"
+        description: "The estimated depart date and time of the patient's encounter.\
+          \ Will be ISO date format String. Optional."
+      patientId:
+        type: "string"
+        description: "The unique identifier for the encounter's patient. Optional."
+      preRegDateTime:
+        type: "string"
+        description: "The pre-registration date and time of the patient's encounter.\
+          \ Will be ISO date format String. Optional."
+      registrationDateTime:
+        type: "string"
+        description: "The registration date and time of the patient's encounter. Will\
+          \ be ISO date format String. Optional."
+  CareTeamV2:
+    type: "object"
+    required:
+      - "careTeamId"
+      - "medicalServiceId"
+    properties:
+      careTeamId:
+        type: "string"
+        description: "The unique identifier for the Care Team. Required."
+      facility:
+        description: "The Care Team facility code. Optional."
+        $ref: "#/definitions/MillenniumCode"
+      lastUpdateDateTime:
+        type: "string"
+        description: "The last update time of the team. Optional."
+      medicalService:
+        description: "The Care Team medical service code. Required."
+        $ref: "#/definitions/MillenniumCode"
+      physTeam:
+        description: "The Care Team physician team code. Optional."
+        $ref: "#/definitions/MillenniumCode"
+  CareTeamPhoneNumberV2:
+    type: "object"
+    required:
+      - "beginEffectiveDateTime"
+      - "endEffectiveDateTime"
+      - "phoneId"
+      - "phoneNumber"
+    properties:
+      beginEffectiveDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "The begin effective date time of the phone number in ISO8601\
+          \ format. We will honor date precision down to the second."
+      contactMethod:
+        description: "The contact method of the phone number. Optional."
+        $ref: "#/definitions/CodifiedValue"
+      endEffectiveDateTime:
+        type: "string"
+        example: "2017-12-10T21:00:00Z"
+        description: "The end effective date time of the phone number in ISO8601 format.\
+          \ We will honor date precision down to the second."
+      phoneExtension:
+        type: "string"
+        example: "123"
+        description: "The phone extension of a Care Team person."
+      phoneId:
+        type: "string"
+        description: "The unique identifier of the phone number."
+      phoneNumber:
+        type: "string"
+        description: "The phone number of a Care Team person. Required."
+      phoneType:
+        description: "The type of phone number. Optional."
+        $ref: "#/definitions/CodifiedValue"
+  CareTeamPersonV2:
+    type: "object"
+    required:
+      - "name"
+      - "personId"
+      - "version"
+    properties:
+      careTeamAddresses:
+        type: "array"
+        description: "The collection of care team addresses of the person."
+        items:
+          $ref: "#/definitions/CareTeamAddress"
+      name:
+        type: "string"
+        description: "The full formatted name of the person. Required."
+      personId:
+        type: "string"
+        description: "The unique identifier for the person. Required."
+      phoneNumbers:
+        type: "array"
+        description: "The list of phone numbers for the Care Team person. Optional."
+        items:
+          $ref: "#/definitions/CareTeamPhoneNumberV2"
+      version:
+        type: "integer"
+        format: "int32"
+        description: "The version of the person. It is used to modify person details."
+  CareTeamMemberV2:
+    type: "object"
+    required:
+      - "isPrimaryContact"
+      - "lastUpdateDateTime"
+      - "memberRoleId"
+      - "memberType"
+    properties:
+      assignmentToEntityType:
+        type: "string"
+        description: "The Entity Type to which the Care Team Member is assigned."
+        enum:
+          - "PATIENT"
+          - "ENCOUNTER"
+      careTeamUnit:
+        description: "The Care Team associated to the patient. Optional."
+        $ref: "#/definitions/CareTeamV2"
+      emails:
+        type: "array"
+        description: "The Care Team member email. Optional."
+        uniqueItems: true
+        items:
+          type: "string"
+      isPrimaryContact:
+        type: "boolean"
+        description: "Indicates if this Care Team member is the primary contact for\
+          \ the Care Team. True, if the member is the primary contact. Required."
+      lastUpdateDateTime:
+        type: "string"
+        description: "The latest update date and time of the Care Team. Will be ISO\
+          \ date format String. Required."
+      medService:
+        description: "The Care Team member medical service code. Optional."
+        $ref: "#/definitions/CodifiedValue"
+      memberRole:
+        description: "The Care Team member role code. Required."
+        $ref: "#/definitions/CodifiedValue"
+      memberRoleType:
+        description: "The Care Team member role type code. Optional."
+        $ref: "#/definitions/CodifiedValue"
+      memberType:
+        type: "string"
+        description: "The Care Team member type, i.e. Encounter Based, Person Based,\
+          \ Non Providers. Required."
+        enum:
+          - "CARE_TEAM"
+          - "SHIFT_ASSIGNMENT"
+          - "CROSS_VISIT_PROVIDER"
+          - "LIFETIME_PROVIDER"
+          - "LIFETIME_NONPROVIDER"
+      position:
+        description: "The Care Team member position code. Optional."
+        $ref: "#/definitions/CodifiedValue"
+      prsnlType:
+        description: "The Care Team member personal type code. Optional."
+        $ref: "#/definitions/CodifiedValue"
+      suggestionScore:
+        type: "number"
+        format: "float"
+        description: "Indicates the suggestion score of a care team member. Ranges\
+          \ from 0 to 1. The least being 0 ( least suggested )and highest being 1 ( highly suggested )"
+      teamMember:
+        description: "The person who is a member of the patient's Care Team. Optional."
+        $ref: "#/definitions/CareTeamPersonV2"
+      uniqueIdentifier:
+        type: "string"
+        description: "Unique Identifier of a Care Team Member Assignment."
+  SuggestedCareTeamAssignmentResponse:
+    type: "object"
+    properties:
+      careTeamMembers:
+        type: "array"
+        description: "The suggested list of care team members for the provided encounter\
+          \ id."
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/CareTeamMemberV2"
+      encounter:
+        description: "The details of the encounter associated to the care team members\
+          \ being returned. "
+        $ref: "#/definitions/CareTeamEncounterV2"
